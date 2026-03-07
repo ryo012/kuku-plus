@@ -212,22 +212,22 @@ function finishGame() {
 function createFallingStars(count) {
     const screen = document.getElementById('screen-result');
     const tokenDisplay = document.querySelector('.token-count');
-    const jarGlass = document.querySelector('.jar-glass');
-    const jarCountEl = document.getElementById('jar-stars-count');
+    const jarGlass = document.getElementById('jar-glass');
 
     // 最初の星の発生元（トークンの数字のあたり）
     const startRect = tokenDisplay.getBoundingClientRect();
     const startX = startRect.left + startRect.width / 2;
     const startY = startRect.top + startRect.height / 2;
 
-    // 最終的な落下先（ビンの中）
+    // 最終的な落下先（ビンの中央付近の座標を計算）
     const endRect = jarGlass.getBoundingClientRect();
     const endX = endRect.left + endRect.width / 2;
-    const endY = endRect.top + endRect.height / 2;
+    const endY = endRect.top + 20;
 
     let jarStars = 0;
-    jarCountEl.style.opacity = 1;
-    jarCountEl.textContent = "0";
+
+    // 既存の星をクリア
+    jarGlass.innerHTML = '';
 
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
@@ -249,7 +249,7 @@ function createFallingStars(count) {
             const animation = star.animate([
                 { transform: `translate(0, 0) scale(${randomScale}) rotate(0deg)`, opacity: 0 },
                 { transform: `translate(${spreadX}px, ${spreadY}px) scale(${randomScale * 1.5}) rotate(180deg)`, opacity: 1, offset: 0.3 },
-                { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${randomScale}) rotate(360deg)`, opacity: 0.8 }
+                { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${randomScale * 0.5}) rotate(360deg)`, opacity: 1 }
             ], {
                 duration: 1200 + Math.random() * 400, // 1.2 ~ 1.6秒
                 easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
@@ -257,9 +257,28 @@ function createFallingStars(count) {
             });
 
             animation.onfinish = () => {
-                star.remove();
+                // アニメーションが終わったらビンの中に要素を移動させて底に積む
+                screen.removeChild(star);
+
+                // ビンの中用のスタイルに変更
+                star.style.position = 'absolute';
+                star.style.transform = `scale(${randomScale * 0.5}) rotate(${Math.random() * 360}deg)`;
+                star.style.animation = 'none';
+
+                // ボトムから0〜30pxくらい、左右はランダムに配置して山積みに見せる
+                const jarW = jarGlass.clientWidth;
+                // 星のサイズは約15px (30px * 0.5)
+                const randomLeft = Math.random() * (jarW - 20) + 5;
+                // たくさん溜まると上に積まれるようにする簡易計算
+                const randomBottom = Math.random() * 15 + (jarStars / count) * 40;
+
+                star.style.left = `${randomLeft}px`;
+                star.style.top = 'auto'; // topの指定を解除
+                star.style.bottom = `${randomBottom}px`;
+
+                jarGlass.appendChild(star);
+
                 jarStars++;
-                jarCountEl.textContent = jarStars;
 
                 // 少しビンを揺らす演出
                 jarGlass.style.transform = "scale(1.05)";
