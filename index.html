@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>九九＋くりあがり フラッシュ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app-container">
+        <!-- 画面1: スタート画面 -->
+        <div id="screen-start" class="screen active">
+            <h1>九九＋くりあがり<br>フラッシュ⚡</h1>
+
+            <div class="input-group">
+                <label for="student-id" style="font-size: 1.2rem; font-weight: bold;">出席番号（しゅっせきばんごう）</label>
+                <input type="number" id="student-id" placeholder="1" min="1" max="50">
+            </div>
+
+            <div class="level-select">
+                <button class="level-btn" onclick="startGame(5)">5問 コース</button>
+                <button class="level-btn" onclick="startGame(10)">10問 コース</button>
+                <button class="level-btn" onclick="startGame(20)">20問 コース</button>
+            </div>
+        </div>
+
+        <!-- 画面2: ゲーム画面 -->
+        <div id="screen-game" class="screen">
+            <div class="game-header">
+                <span id="question-count" class="badge">1問目</span>
+                <span class="badge score-badge">★ <span id="current-score">0</span></span>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <span id="q-a">8</span>
+                    <span class="operator">×</span>
+                    <span id="q-b">2</span>
+                    <span class="operator">＋</span>
+                    <span id="q-c" class="carry-num">7</span>
+                    <span class="operator">＝</span>
+                    <!-- 入力エリア -->
+                    <div class="input-box" id="answer-box">
+                        <span id="user-input" class="user-val"></span>
+                    </div>
+                </div>
+                <!-- はなまるなどの演出用 -->
+                <div id="feedback-overlay" class="feedback-overlay"></div>
+            </div>
+
+            <!-- テンキーパッド -->
+            <div class="numpad-container">
+                <div class="numpad">
+                    <!-- javascriptで生成 -->
+                </div>
+                <div class="numpad-actions">
+                    <button class="action-btn clear-btn" onclick="clearInput()">クリア</button>
+                    <!-- 自動判定にしない場合はOKボタンを置くが、今回は打った瞬間判定か、あるいはOKボタンかのハイブリッド -->
+                    <button class="action-btn ok-btn" id="ok-btn" onclick="checkAnswer()">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 画面3: 結果画面 -->
+        <div id="screen-result" class="screen">
+            <h2>おつかれさま！</h2>
+            <p id="result-text" class="result-text"></p>
+
+            <div class="token-display">
+                <p>あつめた トークン</p>
+                <div class="token-count"><span id="earned-tokens">0</span> 個</div>
+            </div>
+
+            <p style="font-size: 1.1rem; color: #555; margin-bottom: 30px;">
+                がんばった きろく は 先生 に おくられたよ！
+            </p>
+
+            <button class="home-btn" onclick="goHome()">最初にもどる</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
