@@ -77,14 +77,25 @@
 
             <div class="token-display">
                 <p>あつめた トークン</p>
-                <div class="token-count"><span id="earned-tokens">0</span> 個</div>
+                <div class="token-count-wrapper">
+                    <div class="token-count"><span id="earned-tokens">0</span> 個</div>
+                    <div id="multiplier-popup" class="multiplier-popup">× 3 !!</div>
+                </div>
             </div>
 
-            <p style="font-size: 1.1rem; color: #555; margin-bottom: 30px;">
+            <!-- 星が入るビン -->
+            <div class="jar-container" id="jar-container">
+                <div class="jar-lid"></div>
+                <div class="jar-glass">
+                    <div id="jar-stars-count">0</div>
+                </div>
+            </div>
+
+            <p class="screen-result-msg" id="screen-result-msg" style="opacity: 0; transition: opacity 0.5s;">
                 がんばった きろく は 先生 に おくられたよ！
             </p>
 
-            <button class="home-btn" onclick="goHome()">最初にもどる</button>
+            <button class="home-btn" id="home-btn" onclick="goHome()">最初にもどる</button>
         </div>
     </div>
 

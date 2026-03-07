@@ -170,50 +170,111 @@ function finishGame() {
     showScreen('screen-result');
     document.getElementById('result-text').textContent = `${targetQuestions}問中 ${score}問 正解！`;
 
-    // 1問正解 = 1トークン
-    let tokens = score;
+    let baseTokens = score;
+    document.getElementById('earned-tokens').textContent = baseTokens;
 
-    document.getElementById('earned-tokens').textContent = tokens;
+    if (baseTokens > 0) {
+        // GASへ送信する実際のトークン数
+        let totalTokens = baseTokens * 3;
 
-    // 星を降らせるアニメーション生成
-    createFallingStars(tokens);
+        // 1. ビンを下からスライドイン
+        setTimeout(() => {
+            const jar = document.getElementById('jar-container');
+            if (jar) jar.classList.add('show');
 
-    // GASへデータ送信
-    if (tokens > 0) {
-        sendDataToGAS(tokens);
+            // 2. 「× 3」のポップアップを表示
+            setTimeout(() => {
+                const popup = document.getElementById('multiplier-popup');
+                if (popup) popup.classList.add('show');
+
+                // 3. トークン数を3倍に変更
+                setTimeout(() => {
+                    document.getElementById('earned-tokens').textContent = totalTokens;
+
+                    // 4. 星の放出アニメーション
+                    setTimeout(() => {
+                        createFallingStars(totalTokens);
+                        // GASへデータ送信
+                        sendDataToGAS(totalTokens);
+                    }, 500);
+
+                }, 800);
+            }, 800);
+        }, 500);
+    } else {
+        // 0点の場合はそのままホームボタン表示
+        document.getElementById('home-btn').classList.add('show');
+        document.getElementById('screen-result-msg').style.opacity = 1;
     }
 }
 
-// 獲得したトークンの数だけ星を降らせる
+// 獲得したトークンの数だけ星を降らせてビンに入れる
 function createFallingStars(count) {
     const screen = document.getElementById('screen-result');
-    // 古い星があれば消す
-    screen.querySelectorAll('.star').forEach(star => star.remove());
+    const tokenDisplay = document.querySelector('.token-count');
+    const jarGlass = document.querySelector('.jar-glass');
+    const jarCountEl = document.getElementById('jar-stars-count');
+
+    // 最初の星の発生元（トークンの数字のあたり）
+    const startRect = tokenDisplay.getBoundingClientRect();
+    const startX = startRect.left + startRect.width / 2;
+    const startY = startRect.top + startRect.height / 2;
+
+    // 最終的な落下先（ビンの中）
+    const endRect = jarGlass.getBoundingClientRect();
+    const endX = endRect.left + endRect.width / 2;
+    const endY = endRect.top + endRect.height / 2;
+
+    let jarStars = 0;
+    jarCountEl.style.opacity = 1;
+    jarCountEl.textContent = "0";
 
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
             const star = document.createElement('div');
             star.classList.add('star');
 
-            // ランダムなX座標 (5% ~ 95%)
-            const randomX = Math.random() * 90 + 5;
-            // ランダムなサイズ
-            const randomScale = Math.random() * 0.5 + 0.8;
-            // ランダムな落下時間 (2s ~ 4s)
-            const randomDuration = Math.random() * 2 + 2;
+            // 少し散らばらせてからビンへ向かう
+            const spreadX = (Math.random() - 0.5) * 200;
+            const spreadY = (Math.random() - 0.5) * 100 - 50;
+            const randomScale = Math.random() * 0.4 + 0.6;
 
-            star.style.left = `${randomX}%`;
+            star.style.left = `${startX - 15}px`; // star width offset
+            star.style.top = `${startY - 15}px`;
             star.style.transform = `scale(${randomScale})`;
-            star.style.animationDuration = `${randomDuration}s`;
 
             screen.appendChild(star);
 
-            // アニメーションが終わったらDOMから削除
-            setTimeout(() => {
-                star.remove();
-            }, randomDuration * 1000);
+            // Web Animations APIでアニメーション
+            const animation = star.animate([
+                { transform: `translate(0, 0) scale(${randomScale}) rotate(0deg)`, opacity: 0 },
+                { transform: `translate(${spreadX}px, ${spreadY}px) scale(${randomScale * 1.5}) rotate(180deg)`, opacity: 1, offset: 0.3 },
+                { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${randomScale}) rotate(360deg)`, opacity: 0.8 }
+            ], {
+                duration: 1200 + Math.random() * 400, // 1.2 ~ 1.6秒
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                fill: 'forwards'
+            });
 
-        }, i * 300); // 0.3秒おきに1つずつ星を生成する
+            animation.onfinish = () => {
+                star.remove();
+                jarStars++;
+                jarCountEl.textContent = jarStars;
+
+                // 少しビンを揺らす演出
+                jarGlass.style.transform = "scale(1.05)";
+                setTimeout(() => jarGlass.style.transform = "scale(1)", 100);
+
+                // 全て入り終わったらホームボタンなどを表示
+                if (jarStars === count) {
+                    setTimeout(() => {
+                        document.getElementById('home-btn').classList.add('show');
+                        document.getElementById('screen-result-msg').style.opacity = 1;
+                    }, 500);
+                }
+            };
+
+        }, i * 150); // 0.15秒おきに生成
     }
 }
 
