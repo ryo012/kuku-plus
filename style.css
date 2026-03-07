@@ -277,32 +277,56 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    /* 夜空のグラデーション */
+    color: white;
+    position: relative;
+    overflow: hidden;
 }
 
 #screen-result h2 {
     font-size: 3rem;
-    color: var(--primary-color);
+    color: #FFD54F;
+    /* 星の色に合わせる */
+    text-shadow: 0 0 10px rgba(255, 213, 79, 0.5);
+    z-index: 2;
+}
+
+#result-text {
+    z-index: 2;
+    font-size: 1.5rem;
 }
 
 .token-display {
-    background: #FFF9C4;
+    background: rgba(255, 249, 196, 0.1);
+    /* 半透明に */
     border: 3px solid #FBC02D;
     border-radius: 20px;
     padding: 20px 40px;
     margin: 30px 0;
+    z-index: 2;
+    backdrop-filter: blur(5px);
 }
 
 .token-display p {
     margin: 0;
     font-size: 1.5rem;
     font-weight: bold;
-    color: #F57F17;
+    color: #FFF59D;
 }
 
 .token-count {
     font-size: 4rem;
     font-weight: bold;
-    color: #E65100;
+    color: #FFD54F;
+    text-shadow: 0 0 15px rgba(255, 213, 79, 0.8);
+}
+
+.screen-result-msg {
+    font-size: 1.1rem;
+    color: #B0BEC5;
+    margin-bottom: 30px;
+    z-index: 2;
 }
 
 .home-btn {
@@ -311,10 +335,44 @@ body {
     font-weight: bold;
     border-radius: 12px;
     border: none;
-    background: var(--primary-color);
-    color: white;
+    background: #FFD54F;
+    color: #333;
     cursor: pointer;
-    box-shadow: 0 4px 0 var(--btn-shadow);
+    box-shadow: 0 4px 0 #FBC02D;
+    z-index: 2;
+}
+
+/* 降ってくる星のアニメーション */
+.star {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #FFD54F;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    animation: fall linear forwards;
+    z-index: 1;
+    box-shadow: 0 0 10px #FFD54F;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-50px) rotate(0deg) scale(0.5);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(10vh) rotate(45deg) scale(1);
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(110vh) rotate(360deg) scale(0.8);
+        opacity: 0;
+    }
 }
 
 /* はなまるアニメーション */

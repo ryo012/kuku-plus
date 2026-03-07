@@ -170,13 +170,51 @@ function finishGame() {
     showScreen('screen-result');
     document.getElementById('result-text').textContent = `${targetQuestions}問中 ${score}問 正解！`;
 
-    let tokens = Math.floor(score / 5) * 2; // 5問正解ごとに2トークンとか（暫定）
-    if (tokens === 0 && score > 0) tokens = 1; // 1問でも解ければ1トークンとする
+    // 1問正解 = 1トークン
+    let tokens = score;
 
     document.getElementById('earned-tokens').textContent = tokens;
 
+    // 星を降らせるアニメーション生成
+    createFallingStars(tokens);
+
     // GASへデータ送信
-    sendDataToGAS(tokens);
+    if (tokens > 0) {
+        sendDataToGAS(tokens);
+    }
+}
+
+// 獲得したトークンの数だけ星を降らせる
+function createFallingStars(count) {
+    const screen = document.getElementById('screen-result');
+    // 古い星があれば消す
+    screen.querySelectorAll('.star').forEach(star => star.remove());
+
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const star = document.createElement('div');
+            star.classList.add('star');
+
+            // ランダムなX座標 (5% ~ 95%)
+            const randomX = Math.random() * 90 + 5;
+            // ランダムなサイズ
+            const randomScale = Math.random() * 0.5 + 0.8;
+            // ランダムな落下時間 (2s ~ 4s)
+            const randomDuration = Math.random() * 2 + 2;
+
+            star.style.left = `${randomX}%`;
+            star.style.transform = `scale(${randomScale})`;
+            star.style.animationDuration = `${randomDuration}s`;
+
+            screen.appendChild(star);
+
+            // アニメーションが終わったらDOMから削除
+            setTimeout(() => {
+                star.remove();
+            }, randomDuration * 1000);
+
+        }, i * 300); // 0.3秒おきに1つずつ星を生成する
+    }
 }
 
 // GAS連携処理
