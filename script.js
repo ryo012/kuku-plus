@@ -257,26 +257,31 @@ function createFallingStars(count) {
             });
 
             animation.onfinish = () => {
-                // アニメーションが終わったらビンの中に要素を移動させて底に積む
-                screen.removeChild(star);
+                // アニメーションが終わった星は削除
+                star.remove();
 
-                // ビンの中用のスタイルに変更
-                star.style.position = 'absolute';
-                star.style.transform = `scale(${randomScale * 0.5}) rotate(${Math.random() * 360}deg)`;
-                star.style.animation = 'none';
+                // ビンの中に溜まる用の新しい星を作成
+                const insideStar = document.createElement('div');
+                insideStar.classList.add('star');
+
+                // ビンの中用のスタイル
+                insideStar.style.position = 'absolute';
+                const finalScale = randomScale * 0.7;
+                insideStar.style.transform = `scale(${finalScale}) rotate(${Math.random() * 360}deg)`;
 
                 // ボトムから0〜30pxくらい、左右はランダムに配置して山積みに見せる
                 const jarW = jarGlass.clientWidth;
-                // 星のサイズは約15px (30px * 0.5)
-                const randomLeft = Math.random() * (jarW - 20) + 5;
+                // 星のサイズは約20px (30px * 0.7)
+                const randomLeft = Math.random() * (jarW - 25) + 2;
+
                 // たくさん溜まると上に積まれるようにする簡易計算
-                const randomBottom = Math.random() * 15 + (jarStars / count) * 40;
+                const row = Math.floor(jarStars / 4); // 1段あたり4個くらい
+                const randomBottom = Math.random() * 10 + row * 8 + 5;
 
-                star.style.left = `${randomLeft}px`;
-                star.style.top = 'auto'; // topの指定を解除
-                star.style.bottom = `${randomBottom}px`;
+                insideStar.style.left = `${randomLeft}px`;
+                insideStar.style.bottom = `${randomBottom}px`;
 
-                jarGlass.appendChild(star);
+                jarGlass.appendChild(insideStar);
 
                 jarStars++;
 
