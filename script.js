@@ -132,13 +132,17 @@ function checkAnswer() {
         // 履歴記録
         historyLog.push(`${currentProblem.A}×${currentProblem.B}+${currentProblem.C}=${userVal}(o)`);
 
-        // はなまる演出 (CSSの擬似要素や画像で後ほどリッチにする)
+        // はなまる演出
         box.style.backgroundColor = '#C8E6C9';
+        const randomId = 'hanamaru-' + (Math.floor(Math.random() * 5) + 1);
+        const hanamaruEl = document.getElementById(randomId);
+        if (hanamaruEl) hanamaruEl.classList.add('show');
 
         setTimeout(() => {
+            if (hanamaruEl) hanamaruEl.classList.remove('show');
             box.style.backgroundColor = '';
             nextQuestion();
-        }, 500);
+        }, 800);
     } else {
         // 不正解
         historyLog.push(`${currentProblem.A}×${currentProblem.B}+${currentProblem.C}=${userVal}(x)`);
@@ -175,14 +179,27 @@ function finishGame() {
     sendDataToGAS(tokens);
 }
 
-// GAS連携ダミー関数
+// GAS連携処理
 function sendDataToGAS(tokens) {
-    console.log("送信データ:", {
-        id: studentId,
-        tokens: tokens,
-        history: historyLog.join(", ")
-    });
-    // 今後設定するGAS URLに対して fetch を行う
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbw0qStrpeZZqHBf_ND9CorIQ_kRCyq8LQ1BlmxfIFwXNXBcfR13A6lJxAYr-S4Er8U-6A/exec";
+
+    const payload = {
+        appType: "kuku-plus",
+        studentId: studentId,
+        questions: score,
+        tokens: tokens, // トークン数
+        history: historyLog.join("\n") // 改行区切りで履歴を送信
+    };
+
+    fetch(GAS_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain', // GAS側CORS対応のためtext/plain
+        },
+        body: JSON.stringify(payload)
+    }).then(response => response.json())
+        .then(data => console.log('送信成功:', data))
+        .catch(error => console.error('送信エラー:', error));
 }
 
 function goHome() {

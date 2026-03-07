@@ -316,3 +316,30 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 0 var(--btn-shadow);
 }
+
+/* はなまるアニメーション */
+.feedback-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.hanamaru {
+    position: absolute;
+    width: 250px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.hanamaru.show {
+    opacity: 0.9;
+    transform: scale(1) rotate(-10deg);
+}
