@@ -33,6 +33,30 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
+// 結果画面のリセット（再度プレイする時のため）
+function resetResultScreen() {
+    const jar = document.getElementById('jar-container');
+    if (jar) jar.classList.remove('show');
+
+    const popup = document.getElementById('multiplier-popup');
+    if (popup) popup.classList.remove('show');
+
+    const jarGlass = document.getElementById('jar-glass');
+    if (jarGlass) jarGlass.innerHTML = ''; // ビンの中の星を空にする
+
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) homeBtn.classList.remove('show');
+
+    const msg = document.getElementById('screen-result-msg');
+    if (msg) msg.style.opacity = 0;
+
+    const earnedTokens = document.getElementById('earned-tokens');
+    if (earnedTokens) earnedTokens.textContent = '0';
+
+    // 降っている最中の星があれば消す
+    document.getElementById('screen-result').querySelectorAll('.star').forEach(s => s.remove());
+}
+
 // ゲーム開始
 function startGame(count) {
     const idInput = document.getElementById('student-id').value;
@@ -40,6 +64,9 @@ function startGame(count) {
         alert("出席番号を入力してください！");
         return;
     }
+
+    // 結果画面の演出状態をリセット
+    resetResultScreen();
 
     studentId = idInput;
     targetQuestions = count;
