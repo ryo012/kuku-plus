@@ -182,6 +182,15 @@ function checkAnswer() {
     }
 }
 
+// 途中でやめる処理
+function quitGame() {
+    if (confirm("本当にやめて、ここまでのきろくを先生におくりますか？")) {
+        // 現在の状態でゲーム終了処理を呼び出す
+        // score(正解数)に基づいてトークンが計算される
+        finishGame();
+    }
+}
+
 // 次の問題へ
 function nextQuestion() {
     currentQuestion++;
