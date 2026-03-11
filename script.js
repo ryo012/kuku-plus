@@ -204,6 +204,9 @@ function finishGame() {
         // GASへ送信する実際のトークン数
         let totalTokens = baseTokens * 3;
 
+        // すぐにGASへデータ送信（確実性を担保）
+        sendDataToGAS(totalTokens);
+
         // 1. ビンを下からスライドイン
         setTimeout(() => {
             const jar = document.getElementById('jar-container');
@@ -214,17 +217,14 @@ function finishGame() {
                 const popup = document.getElementById('multiplier-popup');
                 if (popup) popup.classList.add('show');
 
-                // 3. トークン数を3倍に変更
+                // 3. トークン数を3倍に変更（表示も確実に行う）
                 setTimeout(() => {
                     document.getElementById('earned-tokens').textContent = totalTokens;
 
-                    // 4. 星の放出アニメーション
-                    setTimeout(() => {
-                        createFallingStars(totalTokens);
-                        // GASへデータ送信
-                        sendDataToGAS(totalTokens);
-                    }, 500);
-
+                    // 4. 星の放出アニメーション（端末負荷を考慮して数を制限）
+                    // ※ 見た目上の星の数であり、実際のトークン数とは切り離す
+                    const dispCount = Math.min(totalTokens, 20);
+                    createFallingStars(dispCount, totalTokens);
                 }, 800);
             }, 800);
         }, 500);
@@ -232,14 +232,24 @@ function finishGame() {
         // 0点の場合はそのままホームボタン表示
         document.getElementById('home-btn').classList.add('show');
         document.getElementById('screen-result-msg').style.opacity = 1;
+        // 0点でも一応履歴は残すため送信
+        sendDataToGAS(0);
     }
 }
 
 // 獲得したトークンの数だけ星を降らせてビンに入れる
-function createFallingStars(count) {
+function createFallingStars(visualCount, totalTokens) {
     const screen = document.getElementById('screen-result');
     const tokenDisplay = document.querySelector('.token-count');
     const jarGlass = document.getElementById('jar-glass');
+
+    // 安全装置: アニメーションの進捗に関わらず、必ず一定時間後にホームボタンを出す
+    // 星1個150ms間隔 + アニメーション時間最大2秒 ＋ 余裕2秒
+    const fallbackTime = (visualCount * 150) + 4000;
+    setTimeout(() => {
+        document.getElementById('home-btn').classList.add('show');
+        document.getElementById('screen-result-msg').style.opacity = 1;
+    }, fallbackTime);
 
     // 最初の星の発生元（トークンの数字のあたり）
     const startRect = tokenDisplay.getBoundingClientRect();
@@ -256,7 +266,7 @@ function createFallingStars(count) {
     // 既存の星をクリア
     jarGlass.innerHTML = '';
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < visualCount; i++) {
         setTimeout(() => {
             const star = document.createElement('div');
             star.classList.add('star');
@@ -272,20 +282,30 @@ function createFallingStars(count) {
 
             screen.appendChild(star);
 
-            // Web Animations APIでアニメーション
-            const animation = star.animate([
-                { transform: `translate(0, 0) scale(${randomScale}) rotate(0deg)`, opacity: 0 },
-                { transform: `translate(${spreadX}px, ${spreadY}px) scale(${randomScale * 1.5}) rotate(180deg)`, opacity: 1, offset: 0.3 },
-                { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${randomScale * 0.5}) rotate(360deg)`, opacity: 1 }
-            ], {
-                duration: 1200 + Math.random() * 400, // 1.2 ~ 1.6秒
-                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-                fill: 'forwards'
-            });
+            try {
+                // Web Animations APIでアニメーション
+                const animation = star.animate([
+                    { transform: `translate(0, 0) scale(${randomScale}) rotate(0deg)`, opacity: 0 },
+                    { transform: `translate(${spreadX}px, ${spreadY}px) scale(${randomScale * 1.5}) rotate(180deg)`, opacity: 1, offset: 0.3 },
+                    { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(${randomScale * 0.5}) rotate(360deg)`, opacity: 1 }
+                ], {
+                    duration: 1200 + Math.random() * 400, // 1.2 ~ 1.6秒
+                    easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                    fill: 'forwards'
+                });
 
-            animation.onfinish = () => {
+                animation.onfinish = () => {
+                    handleStarFallFinish(star, randomScale, jarGlass);
+                };
+            } catch (e) {
+                // Web Animations APIがサポートされていないかエラーが起きた場合のフォールバック
+                console.warn("Animation error:", e);
+                handleStarFallFinish(star, randomScale, jarGlass);
+            }
+
+            function handleStarFallFinish(starEl, scale, jarEl) {
                 // アニメーションが終わった星は削除
-                star.remove();
+                starEl.remove();
 
                 // ビンの中に溜まる用の新しい星を作成
                 const insideStar = document.createElement('div');
@@ -293,11 +313,11 @@ function createFallingStars(count) {
 
                 // ビンの中用のスタイル
                 insideStar.style.position = 'absolute';
-                const finalScale = randomScale * 0.7;
+                const finalScale = scale * 0.7;
                 insideStar.style.transform = `scale(${finalScale}) rotate(${Math.random() * 360}deg)`;
 
                 // ボトムから0〜30pxくらい、左右はランダムに配置して山積みに見せる
-                const jarW = jarGlass.clientWidth;
+                const jarW = jarEl.clientWidth;
                 // 星のサイズは約20px (30px * 0.7)
                 const randomLeft = Math.random() * (jarW - 25) + 2;
 
@@ -308,23 +328,22 @@ function createFallingStars(count) {
                 insideStar.style.left = `${randomLeft}px`;
                 insideStar.style.bottom = `${randomBottom}px`;
 
-                jarGlass.appendChild(insideStar);
+                jarEl.appendChild(insideStar);
 
                 jarStars++;
 
                 // 少しビンを揺らす演出
-                jarGlass.style.transform = "scale(1.05)";
-                setTimeout(() => jarGlass.style.transform = "scale(1)", 100);
+                jarEl.style.transform = "scale(1.05)";
+                setTimeout(() => jarEl.style.transform = "scale(1)", 100);
 
-                // 全て入り終わったらホームボタンなどを表示
-                if (jarStars === count) {
+                // 最後の星が入ったらホームボタンなどを表示
+                if (jarStars === visualCount) {
                     setTimeout(() => {
                         document.getElementById('home-btn').classList.add('show');
                         document.getElementById('screen-result-msg').style.opacity = 1;
                     }, 500);
                 }
-            };
-
+            }
         }, i * 150); // 0.15秒おきに生成
     }
 }
