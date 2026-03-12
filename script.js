@@ -383,3 +383,7 @@ function sendDataToGAS(tokens) {
 function goHome() {
     showScreen('screen-start');
 }
+
+function goToStartScreen() {
+    showScreen('screen-start');
+}

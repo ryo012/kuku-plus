@@ -11,8 +11,14 @@
 
 <body>
     <div id="app-container">
-        <!-- 画面1: スタート画面 -->
-        <div id="screen-start" class="screen active">
+        <!-- 画面0: 新しいタイトル画面 -->
+        <div id="screen-title" class="screen active">
+            <div class="title-bg"></div>
+            <button class="start-btn" onclick="goToStartScreen()">次へすすむ</button>
+        </div>
+
+        <!-- 画面1: スタート画面（出席番号入力など） -->
+        <div id="screen-start" class="screen">
             <h1>九九プラス</h1>
 
             <div class="input-group">
