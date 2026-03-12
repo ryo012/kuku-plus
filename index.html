@@ -32,8 +32,11 @@
         <!-- 画面2: ゲーム画面 -->
         <div id="screen-game" class="screen">
             <div class="game-header">
-                <span id="question-count" class="badge">1問目</span>
-                <span class="badge score-badge">★ <span id="current-score">0</span></span>
+                <button class="action-btn quit-btn-top" onclick="quitGame()">やめる</button>
+                <div class="header-right">
+                    <span id="question-count" class="badge">1問目</span>
+                    <span class="badge score-badge">★ <span id="current-score">0</span></span>
+                </div>
             </div>
 
             <div class="flashcard-container">
@@ -68,9 +71,6 @@
                     <button class="action-btn clear-btn" onclick="clearInput()">クリア</button>
                     <!-- 自動判定にしない場合はOKボタンを置くが、今回は打った瞬間判定か、あるいはOKボタンかのハイブリッド -->
                     <button class="action-btn ok-btn" id="ok-btn" onclick="checkAnswer()">OK</button>
-                </div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="action-btn quit-btn" onclick="quitGame()">やめて記録をおくる</button>
                 </div>
             </div>
         </div>
